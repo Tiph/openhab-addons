@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="yeelight2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="base">
+
+		<label>Yeelight2 Binding Thing</label>
+		<description>Generic Thing for Yeelight Binding</description>
+
+		<channels>
+			<channel id="command" typeId="command" />
+			
+			<channel id="power" typeId="power" />
+			<channel id="delayoff" typeId="delayoff" />
+			
+			<channel id="main_power" typeId="main_power" />
+			<channel id="active_mode" typeId="active_mode" />
+			<channel id="bright" typeId="bright" />
+			<channel id="nl_br" typeId="nl_br" />
+			<channel id="ct" typeId="ct" />
+			<channel id="rgb" typeId="rgb" />
+			<channel id="color_mode" typeId="color_mode" />
+			<channel id="flowing" typeId="flowing" />
+			<channel id="flow_params" typeId="flow_params" />
+			
+			<channel id="bg_power" typeId="bg_power" />
+			<channel id="bg_ct" typeId="bg_ct" />
+			<channel id="bg_bright" typeId="bg_bright" />
+			<channel id="bg_rgb" typeId="bg_rgb" />
+			<channel id="bg_lmode" typeId="bg_lmode" />
+			<channel id="bg_flowing" typeId="bg_flowing" />
+			<channel id="bg_flow_params" typeId="bg_flow_params" />
+		</channels>
+
+		<config-description>
+			<parameter-group name="connection">
+				<label>Connection</label>
+				<description>Connection Settings</description>
+			</parameter-group>
+			<parameter name="ip" type="text" required="true" groupName="connection">
+				<context>network-address</context>
+				<label>Ip</label>
+				<description>Ip Address of the Device.</description>
+			</parameter>
+			<parameter name="id" type="text" required="true" groupName="connection" pattern="^0x[0-9a-fA-F]{16}$">
+				<label>Id</label>
+				<description>Device Id. e.g. '0x000000000015243f'</description>
+			</parameter>
+			<parameter name="smooth" type="boolean" required="true">
+				<label>Smooth transition</label>
+				<description>If true the transition between state will be smooth. Immediate otherwise</description>
+				<default>true</default>
+			</parameter>
+			<parameter name="smooth_duration" type="integer" min="30" max="10000" unit="ms" required="true">
+				<label>Smooth duration (ms)</label>
+				<description>The Duration of the Smooth Transition in millisecond</description>
+				<default>500</default>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+</thing:thing-descriptions>

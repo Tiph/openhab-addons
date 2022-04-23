@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="yeelight2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+
+<!-- https://www.openhab.org/docs/developer/bindings/thing-xml.html#system-trigger-channel-types -->
+    <!-- Command Channel -->
+    <channel-type id="command">
+        <item-type>String</item-type>
+        <label>Command</label>
+        <description>Send a Command Directly to the Device.</description>
+    </channel-type>
+    
+    <!-- Power Channel -->
+    <channel-type id="power">
+        <item-type>Switch</item-type>
+        <label>Power</label>
+        <description>Power Status</description>
+        <category>Light</category>
+    </channel-type>
+    
+    <!-- Delay Off Channel -->
+    <channel-type id="delayoff">
+        <item-type>Number:Time</item-type>
+        <label>Delay Off</label>
+        <description>The Remaining Time of a Sleep Timer. Range 1 ~ 60 (minutes)</description>
+        <category>Time</category>
+        <state min="0" max="60" step="1" pattern="%d %unit%" readOnly="true" />
+    </channel-type>
+    
+    <!-- Main Power Channel -->
+    <channel-type id="main_power">
+        <item-type>Switch</item-type>
+        <label>Main Power</label>
+        <description>Main Power Status</description>
+        <category>Light</category>
+    </channel-type>
+    
+    <!-- Active mode Channel -->
+    <channel-type id="active_mode">
+        <item-type>Switch</item-type>
+        <label>Moon light</label>
+        <description>Power Status</description>
+        <category>Light</category>
+        <state readOnly="true" />
+    </channel-type>
+
+	<!-- Brightness Channel -->
+	<channel-type id="bright">
+		<item-type>Dimmer</item-type>
+		<label>Brightness</label>
+		<description>Brightness Percentage. Range 1 ~ 100</description>
+		<category>Light</category>
+		<state min="1" max="100" step="1" pattern="%d %"></state>
+	</channel-type>
+	
+	<!-- Nightlight (moon mode) Brightness Channel -->
+    <channel-type id="nl_br">
+        <item-type>Dimmer</item-type>
+        <label>Moon Brightness</label>
+        <description>Moon Brightness Percentage. Range 1 ~ 100</description>
+        <category>Light</category>
+        <state min="1" max="100" step="1" pattern="%d %"></state>
+    </channel-type>
+	
+	<!-- Color Temperature Channel -->
+    <channel-type id="ct">
+        <item-type>Number</item-type>
+        <label>Color Temperature</label>
+        <description>Color Temperature. Range 1700 ~ 6500(K)</description>
+        <category>Light</category>
+        <state min="1700" max="6500" step="1" pattern="%d K"></state>
+    </channel-type>
+
+	<!-- Color Channel -->
+	<channel-type id="rgb">
+		<item-type>Color</item-type>
+		<label>Color</label>
+		<description>Color</description>
+		<category>ColorLight</category>
+	</channel-type>
+    <channel-type id="color_mode">
+        <item-type>String</item-type>
+        <label>Color Mode</label>
+        <description>Color Mode</description>
+        <category>ColorLight</category>
+        <state readOnly="true">
+		    <options>
+		        <option value="RGB">Color</option>
+		        <option value="CT">Color Temperature</option>
+		        <option value="HSV">Hsv</option>
+		    </options>
+	   </state>
+    </channel-type>
+    
+    <!-- Flowing Channel -->
+    <channel-type id="flowing">
+        <item-type>Switch</item-type>
+        <label>Flowing</label>
+        <description>Flow Running Status</description>
+        <state readOnly="true" />
+    </channel-type>
+    
+    <!-- Flow Parameters Channel -->
+    <channel-type id="flow_params">
+        <item-type>String</item-type>
+        <label>Flow Parameters</label>
+        <description>Current Flow Parameters.</description>
+        <state readOnly="true" />
+    </channel-type>
+
+
+    <!-- Background Power Channel -->
+    <channel-type id="bg_power">
+        <item-type>Switch</item-type>
+        <label>Background Power</label>
+        <description>Background Power Status</description>
+        <category>Light</category>
+    </channel-type>
+
+    <!-- Background Color Temperature Channel -->
+    <channel-type id="bg_ct">
+        <item-type>Number</item-type>
+        <label>Background Color Temperature</label>
+        <description>Background Color Temperature. Range 1700 ~ 6500(K)</description>
+        <category>Light</category>
+        <state min="1700" max="6500" step="1" pattern="%d K"></state>
+    </channel-type>
+    
+    <!-- Background Brightness Channel -->
+    <channel-type id="bg_bright">
+        <item-type>Dimmer</item-type>
+        <label>Background Brightness</label>
+        <description>Background Brightness Percentage. Range 1 ~ 100</description>
+        <category>Light</category>
+        <state min="1" max="100" step="1" pattern="%d %"></state>
+    </channel-type>
+    
+    <!-- Background Color Channel -->
+    <channel-type id="bg_rgb">
+        <item-type>Color</item-type>
+        <label>Background Color</label>
+        <description>Background Color</description>
+        <category>ColorLight</category>
+    </channel-type>
+    
+    <channel-type id="bg_lmode">
+        <item-type>String</item-type>
+        <label>Background Color Mode</label>
+        <description>Background Color Mode</description>
+        <category>ColorLight</category>
+        <state readOnly="true">
+            <options>
+                <option value="RGB">Color</option>
+                <option value="CT">Color Temperature</option>
+                <option value="HSV">Hsv</option>
+            </options>
+       </state>
+    </channel-type>
+    
+    <!-- Background Flowing Channel -->
+    <channel-type id="bg_flowing">
+        <item-type>Switch</item-type>
+        <label>Background Flowing</label>
+        <description>Background Flow Running Status</description>
+        <state readOnly="true" />
+    </channel-type>
+    
+    <!-- Background Flow Parameters Channel -->
+    <channel-type id="bg_flow_params">
+        <item-type>String</item-type>
+        <label>Background Flow Parameters</label>
+        <description>Current Background Flow Parameters.</description>
+        <state readOnly="true" />
+    </channel-type>
+    
+
+
+
+</thing:thing-descriptions>
