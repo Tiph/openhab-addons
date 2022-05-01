@@ -6,5 +6,4 @@ import java.nio.channels.SocketChannel;
 public interface Yeelight2Selector {
 
     void register(SocketChannel channel, Yeelight2Handler thingHandler) throws ClosedChannelException;
-
 }

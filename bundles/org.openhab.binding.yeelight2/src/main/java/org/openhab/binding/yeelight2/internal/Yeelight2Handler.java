@@ -215,7 +215,7 @@ public class Yeelight2Handler extends BaseThingHandler {
     }
 
     private void updateState(YeelightDeviceProperty property, String value, boolean forceUpdate) {
-        if (!value.isEmpty() && !value.equals(stateByProp.put(property, value)) || forceUpdate) {
+        if (!value.isEmpty() && (!value.equals(stateByProp.put(property, value)) || forceUpdate)) {
             updateState(property.getPropertyName(), (State) property.getType(value));
         }
     }
@@ -269,7 +269,6 @@ public class Yeelight2Handler extends BaseThingHandler {
                 startClient();
             }, 0, 10, TimeUnit.SECONDS);
         }
-
     }
 
     // private void updateChannels() {
@@ -293,5 +292,4 @@ public class Yeelight2Handler extends BaseThingHandler {
     // updateThing(editThing().withChannel(powerChannel.build()).build());
     //
     // }
-
 }

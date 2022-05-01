@@ -88,11 +88,12 @@ public class Yeelight2SelectorThread extends Thread implements Yeelight2Selector
                     } catch (IOException e) {
                         logger.error("Error on socket", e);
                         thingHandler.setOffline(ThingStatusDetail.COMMUNICATION_ERROR, "Socket down");
+                    } catch (Exception e) {
+                        logger.error("Error while processing message", e);
                     }
                 }
             }
         }
         logger.trace("Selector thread shuting down");
     }
-
 }

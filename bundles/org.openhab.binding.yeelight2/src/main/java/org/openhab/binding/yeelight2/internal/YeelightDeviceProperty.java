@@ -25,7 +25,7 @@ public enum YeelightDeviceProperty {
 
     // Main
     MAIN_POWER("main_power", "set_power", OnOffType.class, OnOffType::from),
-    ACTIVE_MODE("active_mode", null, OnOffType.class, OnOffType::from),
+    ACTIVE_MODE("active_mode", null, StringType.class, Constant.activeModeFunction),
     BRIGHTNESS("bright", "set_bright", PercentType.class, PercentType::valueOf),
     NL_BRIGHTNESS("nl_br", "set_nl_br", PercentType.class, PercentType::valueOf),
     COLOR_TEMPERATURE("ct", "set_ct_abx", DecimalType.class, DecimalType::valueOf),
@@ -129,6 +129,19 @@ public enum YeelightDeviceProperty {
                 return HSBType.fromRGB(r, g, b);
             }
         };
-    }
+        static final Function<String, Type> activeModeFunction = new Function<String, Type>() {
+            @Override
+            public Type apply(String s) {
+                switch (s) {
+                    case "0":
+                        return StringType.valueOf("SUN");
+                    case "1":
+                        return StringType.valueOf("MOON");
 
+                }
+                return StringType.valueOf("NULL");
+            }
+        };
+
+    }
 }

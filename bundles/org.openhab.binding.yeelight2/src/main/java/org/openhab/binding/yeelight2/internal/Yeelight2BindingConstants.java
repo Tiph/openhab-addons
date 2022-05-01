@@ -66,5 +66,4 @@ public class Yeelight2BindingConstants {
         cmd += "]}";
         GET_PROP_QUERY = cmd;
     }
-
 }

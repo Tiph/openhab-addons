@@ -215,7 +215,6 @@ public class Yeelight2DiscoveryService extends AbstractDiscoveryService {
             }
             logger.trace("Receiver thread ended");
         }
-
     }
 
     private static final Pattern HEADER_PATTERN = Pattern.compile("(.*?):(.*)$");
@@ -261,5 +260,4 @@ public class Yeelight2DiscoveryService extends AbstractDiscoveryService {
                         + thingProperties.get("name") + ", id:" + thingProperties.get(PARAMETER_ID) + "]");
         thingDiscovered(dr.build());
     }
-
 }

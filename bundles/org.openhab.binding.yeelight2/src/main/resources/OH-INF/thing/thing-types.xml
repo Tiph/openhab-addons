@@ -10,28 +10,28 @@
 		<description>Generic Thing for Yeelight Binding</description>
 
 		<channels>
-			<channel id="command" typeId="command" />
-			
-			<channel id="power" typeId="power" />
-			<channel id="delayoff" typeId="delayoff" />
-			
-			<channel id="main_power" typeId="main_power" />
-			<channel id="active_mode" typeId="active_mode" />
-			<channel id="bright" typeId="bright" />
-			<channel id="nl_br" typeId="nl_br" />
-			<channel id="ct" typeId="ct" />
-			<channel id="rgb" typeId="rgb" />
-			<channel id="color_mode" typeId="color_mode" />
-			<channel id="flowing" typeId="flowing" />
-			<channel id="flow_params" typeId="flow_params" />
-			
-			<channel id="bg_power" typeId="bg_power" />
-			<channel id="bg_ct" typeId="bg_ct" />
-			<channel id="bg_bright" typeId="bg_bright" />
-			<channel id="bg_rgb" typeId="bg_rgb" />
-			<channel id="bg_lmode" typeId="bg_lmode" />
-			<channel id="bg_flowing" typeId="bg_flowing" />
-			<channel id="bg_flow_params" typeId="bg_flow_params" />
+			<channel id="command" typeId="command"/>
+
+			<channel id="power" typeId="power"/>
+			<channel id="delayoff" typeId="delayoff"/>
+
+			<channel id="main_power" typeId="main_power"/>
+			<channel id="active_mode" typeId="active_mode"/>
+			<channel id="bright" typeId="bright"/>
+			<channel id="nl_br" typeId="nl_br"/>
+			<channel id="ct" typeId="ct"/>
+			<channel id="rgb" typeId="rgb"/>
+			<channel id="color_mode" typeId="color_mode"/>
+			<channel id="flowing" typeId="flowing"/>
+			<channel id="flow_params" typeId="flow_params"/>
+
+			<channel id="bg_power" typeId="bg_power"/>
+			<channel id="bg_ct" typeId="bg_ct"/>
+			<channel id="bg_bright" typeId="bg_bright"/>
+			<channel id="bg_rgb" typeId="bg_rgb"/>
+			<channel id="bg_lmode" typeId="bg_lmode"/>
+			<channel id="bg_flowing" typeId="bg_flowing"/>
+			<channel id="bg_flow_params" typeId="bg_flow_params"/>
 		</channels>
 
 		<config-description>
