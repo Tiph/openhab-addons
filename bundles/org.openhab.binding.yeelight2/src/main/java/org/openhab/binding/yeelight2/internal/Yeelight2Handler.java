@@ -161,10 +161,17 @@ public class Yeelight2Handler extends BaseThingHandler {
             selectorProvider.register(socketChannel, this);
             setOnline();
         } catch (ConnectException e) {
-            logger.error("Thing not reachable", e);
-            setOffline(ThingStatusDetail.COMMUNICATION_ERROR, "Thing not reachable");
+            logger.warn("Thing not reachable: {}", e.toString());
+            setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
+            if (logger.isDebugEnabled()) {
+                logger.error(e.getMessage(), e);
+            }
         } catch (IOException e) {
-            logger.error("Error while starting client", e);
+            logger.warn("Error while starting client: {}", e.toString());
+            setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
+            if (logger.isDebugEnabled()) {
+                logger.error(e.getMessage(), e);
+            }
         }
     }
 

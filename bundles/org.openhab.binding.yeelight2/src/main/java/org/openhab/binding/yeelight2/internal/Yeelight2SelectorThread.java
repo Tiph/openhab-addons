@@ -50,50 +50,52 @@ public class Yeelight2SelectorThread extends Thread implements Yeelight2Selector
     public void run() {
         while (!Thread.interrupted()) {
             try {
-                selector.select();
-            } catch (IOException e) {
-                logger.error("Error in selector", e);
-            }
-            Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
-            while (selectedKeys.hasNext()) {
-                SelectionKey key = selectedKeys.next();
-                selectedKeys.remove();
-
-                SocketChannel channel = (SocketChannel) key.channel();
-                Yeelight2Handler thingHandler = (Yeelight2Handler) key.attachment();
-
-                if (key.isReadable()) {
-                    try {
-                        int read = channel.read(readerBb.clear());
-                        readerBb.flip();
-                        if (read > 0) {
-                            while (readerBb.hasRemaining()) {
-                                char c = (char) readerBb.get();
-                                if (c == '\r') {
-                                    continue; // ignore \r\n
-                                } else if (c == '\n') {
-                                    // /!\ presume that messages are not cut /!\
-                                    thingHandler.handleMessage(sb.toString());
-                                    sb.setLength(0); // reset for next msg
-                                } else {
-                                    sb.append(c);
-                                }
-                            }
-                        } else if (read == -1) {
-                            logger.error("End of socket");
-                            thingHandler.setOffline(ThingStatusDetail.COMMUNICATION_ERROR, "Socket down");
-                        } else {
-                            logger.error("Socket empty");
-                        }
-                    } catch (IOException e) {
-                        logger.error("Error on socket", e);
-                        thingHandler.setOffline(ThingStatusDetail.COMMUNICATION_ERROR, "Socket down");
-                    } catch (Exception e) {
-                        logger.error("Error while processing message", e);
-                    }
-                }
+                select();
+            } catch (Exception e) {
+                logger.error("Error while processing message", e);
             }
         }
         logger.trace("Selector thread shuting down");
+    }
+
+    private final void select() throws IOException {
+        selector.select();
+        Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
+        while (selectedKeys.hasNext()) {
+            SelectionKey key = selectedKeys.next();
+            selectedKeys.remove();
+
+            SocketChannel channel = (SocketChannel) key.channel();
+            Yeelight2Handler thingHandler = (Yeelight2Handler) key.attachment();
+
+            if (key.isReadable()) {
+                try {
+                    int read = channel.read(readerBb.clear());
+                    readerBb.flip();
+                    if (read > 0) {
+                        while (readerBb.hasRemaining()) {
+                            char c = (char) readerBb.get();
+                            if (c == '\r') {
+                                continue; // ignore \r\n
+                            } else if (c == '\n') {
+                                // /!\ presume that messages are not cut /!\
+                                thingHandler.handleMessage(sb.toString());
+                                sb.setLength(0); // reset for next msg
+                            } else {
+                                sb.append(c);
+                            }
+                        }
+                    } else if (read == -1) {
+                        logger.error("End of socket");
+                        thingHandler.setOffline(ThingStatusDetail.COMMUNICATION_ERROR, "Socket down");
+                    } else {
+                        logger.error("Socket empty");
+                    }
+                } catch (IOException e) {
+                    logger.error("Error on socket", e);
+                    thingHandler.setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
+                }
+            }
+        }
     }
 }
