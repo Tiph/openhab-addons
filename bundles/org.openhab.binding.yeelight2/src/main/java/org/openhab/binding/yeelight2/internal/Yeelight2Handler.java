@@ -107,21 +107,25 @@ public class Yeelight2Handler extends BaseThingHandler {
             cmdBuilder.append("\","); // ",
             cmdBuilder.append("\"params\":["); // "params":[
 
+            String stringValue;
             switch (prop) {
                 case POWER:
                 case BG_POWER:
                 case MAIN_POWER:
+                    stringValue = command.toFullString().toLowerCase();
                     cmdBuilder.append("\"");
-                    cmdBuilder.append(command.toFullString().toLowerCase());
+                    cmdBuilder.append(stringValue);
                     cmdBuilder.append("\"");
                     break;
                 case RGB:
                 case BG_RGB:
                     HSBType v = (HSBType) command;
-                    cmdBuilder.append(Integer.toString(v.getRGB() & 0xFFFFFF));
+                    stringValue = Integer.toString(v.getRGB() & 0xFFFFFF);
+                    cmdBuilder.append(stringValue);
                     break;
                 default:
-                    cmdBuilder.append(command.toFullString());
+                    stringValue = command.toFullString();
+                    cmdBuilder.append(stringValue);
                     break;
             }
             cmdBuilder.append(","); // ,
@@ -132,6 +136,11 @@ public class Yeelight2Handler extends BaseThingHandler {
                 cmdBuilder.append("\"sudden\""); // "sudden",
             }
             cmdBuilder.append("]}"); // ]}
+
+            // Update state to change the "stateByProp" property in case we change something that cannot be change
+            // e.g. changing brightness while light is off
+            updateState(prop, stringValue, false);
+
             sendCommand(cmdBuilder.toString());
         }
     }
