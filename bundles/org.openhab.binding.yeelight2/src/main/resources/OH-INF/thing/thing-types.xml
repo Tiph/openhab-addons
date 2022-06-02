@@ -35,19 +35,25 @@
 		</channels>
 
 		<config-description>
-			<parameter-group name="connection">
-				<label>Connection</label>
-				<description>Connection Settings</description>
-			</parameter-group>
-			<parameter name="ip" type="text" required="true" groupName="connection">
+			<parameter name="ip" type="text" required="true">
 				<context>network-address</context>
 				<label>Ip</label>
 				<description>Ip Address of the Device.</description>
 			</parameter>
-			<parameter name="id" type="text" required="true" groupName="connection" pattern="^0x[0-9a-fA-F]{16}$">
+			<parameter name="id" type="text" required="true" pattern="^0x[0-9a-fA-F]{16}$">
 				<label>Id</label>
 				<description>Device Id. e.g. '0x000000000015243f'</description>
 			</parameter>
+			<parameter name="refresh_interval" type="integer" min="10" max="86400" unit="s" required="true">
+                <label>Refresh interval (s)</label>
+                <description>The delay between to refresh (send a property request each refresh_interval)</description>
+                <default>60</default>
+            </parameter>
+            <parameter name="reconnect_interval" type="integer" min="10" max="86400" unit="s" required="true">
+                <label>Reconnect interval (s)</label>
+                <description>The delay to wait for the next reconnection after a fail</description>
+                <default>60</default>
+            </parameter>
 			<parameter name="smooth" type="boolean" required="true">
 				<label>Smooth transition</label>
 				<description>If true the transition between state will be smooth. Immediate otherwise</description>

@@ -15,6 +15,7 @@ package org.openhab.binding.yeelight2.internal;
 import static org.openhab.binding.yeelight2.internal.Yeelight2BindingConstants.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -66,10 +67,14 @@ public class Yeelight2Handler extends BaseThingHandler {
 
     private @Nullable ScheduledFuture<?> heartbeatTask;
     private @Nullable ScheduledFuture<?> reconnectTask;
+    private int refreshInterval;
+    private int reconnectInterval;
 
     public Yeelight2Handler(Thing thing, @Nullable Yeelight2Selector selector) {
         super(thing);
         this.selectorProvider = selector;
+        refreshInterval = ((BigDecimal) thing.getConfiguration().get(PARAMETER_REFRESH_INTERVAL)).intValue();
+        reconnectInterval = ((BigDecimal) thing.getConfiguration().get(PARAMETER_RECONNECT_INTERVAL)).intValue();
     }
 
     @Override
@@ -274,7 +279,7 @@ public class Yeelight2Handler extends BaseThingHandler {
         }
         heartbeatTask = scheduler.scheduleAtFixedRate(() -> {
             sendCommand(GET_PROP_QUERY);
-        }, 0, 30, TimeUnit.SECONDS);
+        }, 0, refreshInterval, TimeUnit.SECONDS);
     }
 
     public void setOffline(ThingStatusDetail thingStatusDetail, String description) {
@@ -283,7 +288,7 @@ public class Yeelight2Handler extends BaseThingHandler {
         if (reconnectTask == null) {
             reconnectTask = scheduler.scheduleWithFixedDelay(() -> {
                 startClient();
-            }, 0, 10, TimeUnit.SECONDS);
+            }, 0, reconnectInterval, TimeUnit.SECONDS);
         }
     }
 

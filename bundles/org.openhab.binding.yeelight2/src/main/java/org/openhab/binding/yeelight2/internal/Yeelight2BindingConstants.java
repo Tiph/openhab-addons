@@ -35,6 +35,8 @@ public class Yeelight2BindingConstants {
     // Thing Configuration names
     public static final String PARAMETER_IP = "ip";
     public static final String PARAMETER_ID = "id";
+    public static final String PARAMETER_REFRESH_INTERVAL = "refresh_interval";
+    public static final String PARAMETER_RECONNECT_INTERVAL = "reconnect_interval";
     public static final String PARAMETER_SMOOTH = "smooth";
     public static final String PARAMETER_SMOOTH_DURATION = "smooth_duration";
 
