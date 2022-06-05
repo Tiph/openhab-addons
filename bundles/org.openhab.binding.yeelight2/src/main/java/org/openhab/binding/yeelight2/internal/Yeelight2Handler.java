@@ -164,6 +164,11 @@ public class Yeelight2Handler extends BaseThingHandler {
     public void dispose() {
         logger.trace("Disposing: {}", config.id);
         stopClient();
+
+        if (reconnectTask != null) {
+            reconnectTask.cancel(true);
+            reconnectTask = null;
+        }
     }
 
     private void startClient() {
