@@ -35,6 +35,7 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
+import org.openhab.core.types.RefreshType;
 import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,11 +86,7 @@ public class Yeelight2Handler extends BaseThingHandler {
             return;
         }
 
-        YeelightDeviceProperty property = YeelightDeviceProperty.fromPropertyName(id);
-        String value = stateByProp.get(property);
-        if (value != null) {
-            updateState(property, value, true);
-        }
+        handleCommand(channelUID, RefreshType.REFRESH);
     }
 
     @Override
@@ -98,6 +95,15 @@ public class Yeelight2Handler extends BaseThingHandler {
 
         if (id.equals(CHANNEL_COMMAND) && command instanceof StringType && !command.toString().isEmpty()) {
             sendCommand(command.toString());
+            return;
+        }
+
+        if (command instanceof RefreshType) {
+            YeelightDeviceProperty property = YeelightDeviceProperty.fromPropertyName(id);
+            String value = stateByProp.get(property);
+            if (value != null) {
+                updateState(property, value, true);
+            }
             return;
         }
 
