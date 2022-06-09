@@ -32,6 +32,11 @@ public class Yeelight2BindingConstants {
     // List of all Channel ids
     public static final String CHANNEL_COMMAND = "command";
 
+    // List of all Channel Group
+    public static final String CHANNEL_GROUP_API = "api";
+    public static final String CHANNEL_GROUP_DEFAULT = "default";
+    public static final String CHANNEL_GROUP_STATE_ONLY = "state_only";
+
     // Thing Configuration names
     public static final String PARAMETER_IP = "ip";
     public static final String PARAMETER_ID = "id";

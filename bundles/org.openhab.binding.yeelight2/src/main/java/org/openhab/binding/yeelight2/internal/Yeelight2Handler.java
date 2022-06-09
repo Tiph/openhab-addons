@@ -80,7 +80,7 @@ public class Yeelight2Handler extends BaseThingHandler {
 
     @Override
     public void channelLinked(ChannelUID channelUID) {
-        String id = channelUID.getId();
+        String id = channelUID.getIdWithoutGroup();
 
         if (id.equals(CHANNEL_COMMAND)) {
             return;
@@ -91,12 +91,7 @@ public class Yeelight2Handler extends BaseThingHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        String id = channelUID.getId();
-
-        if (id.equals(CHANNEL_COMMAND) && command instanceof StringType && !command.toString().isEmpty()) {
-            sendCommand(command.toString());
-            return;
-        }
+        String id = channelUID.getIdWithoutGroup();
 
         if (command instanceof RefreshType) {
             YeelightDeviceProperty property = YeelightDeviceProperty.fromPropertyName(id);
@@ -104,6 +99,16 @@ public class Yeelight2Handler extends BaseThingHandler {
             if (value != null) {
                 updateState(property, value, true);
             }
+            return;
+        }
+
+        if (CHANNEL_GROUP_STATE_ONLY.equals(channelUID.getGroupId())) {
+            // drop command from channel state only
+            return;
+        }
+
+        if (id.equals(CHANNEL_COMMAND) && command instanceof StringType && !command.toString().isEmpty()) {
+            sendCommand(command.toString());
             return;
         }
 
@@ -248,7 +253,12 @@ public class Yeelight2Handler extends BaseThingHandler {
 
     private void updateState(YeelightDeviceProperty property, String value, boolean forceUpdate) {
         if (!value.isEmpty() && (!value.equals(stateByProp.put(property, value)) || forceUpdate)) {
-            updateState(property.getPropertyName(), (State) property.getType(value));
+            ChannelUID stateOnlyChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_STATE_ONLY,
+                    property.getPropertyName());
+            ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_DEFAULT,
+                    property.getPropertyName());
+            updateState(stateOnlyChannelUID, (State) property.getType(value));
+            updateState(defaultChannelUID, (State) property.getType(value));
         }
     }
 
