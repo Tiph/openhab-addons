@@ -32,7 +32,7 @@ public enum YeelightDeviceProperty {
     RGB("rgb", "set_rgb", HSBType.class, Constant.rgbFunction),
     COLOR_MODE("color_mode", null, StringType.class, Constant.colorModeFunction),
     FLOWING("flowing", null, OnOffType.class, OnOffType::from),
-    FLOW_PARAMS("flow_params", null, StringType.class, StringType::valueOf),
+    FLOW_PARAMS("flow_params", null, StringType.class, StringType::valueOf, FLOWING),
 
     // Background
     BG_POWER("bg_power", "bg_set_power", OnOffType.class, OnOffType::from),
@@ -41,7 +41,7 @@ public enum YeelightDeviceProperty {
     BG_RGB("bg_rgb", "bg_set_rgb", HSBType.class, Constant.rgbFunction),
     BG_COLOR_MODE("bg_lmode", null, StringType.class, Constant.colorModeFunction),
     BG_FLOWING("bg_flowing", null, OnOffType.class, OnOffType::from),
-    BG_FLOW_PARAMS("bg_flow_params", null, StringType.class, StringType::valueOf),
+    BG_FLOW_PARAMS("bg_flow_params", null, StringType.class, StringType::valueOf, BG_FLOWING),
     //
     ;
 
@@ -64,6 +64,11 @@ public enum YeelightDeviceProperty {
      */
     private Function<String, Type> mappingFunction;
 
+    /**
+     * The property to check for a value to determine if channel is supported
+     */
+    private YeelightDeviceProperty channelProperty;
+
     private static final Map<String, YeelightDeviceProperty> ENUM_MAP;
 
     static {
@@ -76,10 +81,20 @@ public enum YeelightDeviceProperty {
 
     YeelightDeviceProperty(String propName, String setterMethodName, Class<? extends Type> associatedType,
             Function<String, Type> mappingFunction) {
+        this(propName, setterMethodName, associatedType, mappingFunction, null);
+    }
+
+    YeelightDeviceProperty(String propName, String setterMethodName, Class<? extends Type> associatedType,
+            Function<String, Type> mappingFunction, YeelightDeviceProperty channelProperty) {
         this.propertyName = propName;
         this.setterName = setterMethodName;
         this.associatedType = associatedType;
         this.mappingFunction = mappingFunction;
+        if (channelProperty == null) {
+            this.channelProperty = this;
+        } else {
+            this.channelProperty = channelProperty;
+    }
     }
 
     public String getPropertyName() {
@@ -96,6 +111,10 @@ public enum YeelightDeviceProperty {
 
     public Type getType(String val) {
         return mappingFunction.apply(val);
+    }
+
+    public YeelightDeviceProperty getChannelProperty() {
+        return channelProperty;
     }
 
     public static YeelightDeviceProperty fromPropertyName(String value) {

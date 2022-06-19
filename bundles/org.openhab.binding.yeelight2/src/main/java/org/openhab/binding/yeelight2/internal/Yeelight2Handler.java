@@ -34,6 +34,7 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.binding.BaseThingHandler;
+import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 import org.openhab.core.types.State;
@@ -70,6 +71,9 @@ public class Yeelight2Handler extends BaseThingHandler {
     private @Nullable ScheduledFuture<?> reconnectTask;
     private int refreshInterval;
     private int reconnectInterval;
+
+    // If channel need to be checked (Remove channel that are not supported)
+    private boolean checkChannel = true;
 
     public Yeelight2Handler(Thing thing, @Nullable Yeelight2Selector selector) {
         super(thing);
@@ -262,6 +266,23 @@ public class Yeelight2Handler extends BaseThingHandler {
         }
     }
 
+    private void hideChannelIfNotSupported() {
+
+        ThingBuilder thingBuilder = editThing();
+
+        for (YeelightDeviceProperty p : YeelightDeviceProperty.values()) {
+            if (!stateByProp.containsKey(p.getChannelProperty())) {
+                ChannelUID stateOnlyChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_STATE_ONLY,
+                        p.getPropertyName());
+                ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_CONTROL,
+                        p.getPropertyName());
+                thingBuilder.withoutChannel(defaultChannelUID).withoutChannel(stateOnlyChannelUID);
+            }
+        }
+        updateThing(thingBuilder.build());
+
+    }
+
     /**
      * Handle response to command
      *
@@ -272,6 +293,11 @@ public class Yeelight2Handler extends BaseThingHandler {
         if (id == ID_ALL_PROP_QUERY && result.size() == YeelightDeviceProperty.values().length) {
             for (YeelightDeviceProperty p : YeelightDeviceProperty.values()) {
                 updateState(p, result.get(p.ordinal()).getAsString(), false);
+            }
+            // Check and remove unsupported channels
+            if (checkChannel) {
+                hideChannelIfNotSupported();
+                checkChannel = false;
             }
         } else {
         }
