@@ -11,7 +11,7 @@
 
         <channel-groups>
 	       <channel-group id="api" typeId="api" />
-	       <channel-group id="default" typeId="default" />
+	       <channel-group id="control" typeId="control" />
 	       <channel-group id="state_only" typeId="state_only" />
 	    </channel-groups>
 

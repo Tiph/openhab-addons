@@ -255,7 +255,7 @@ public class Yeelight2Handler extends BaseThingHandler {
         if (!value.isEmpty() && (!value.equals(stateByProp.put(property, value)) || forceUpdate)) {
             ChannelUID stateOnlyChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_STATE_ONLY,
                     property.getPropertyName());
-            ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_DEFAULT,
+            ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_CONTROL,
                     property.getPropertyName());
             updateState(stateOnlyChannelUID, (State) property.getType(value));
             updateState(defaultChannelUID, (State) property.getType(value));

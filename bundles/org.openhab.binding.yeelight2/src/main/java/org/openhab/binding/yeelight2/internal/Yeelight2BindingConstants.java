@@ -34,7 +34,7 @@ public class Yeelight2BindingConstants {
 
     // List of all Channel Group
     public static final String CHANNEL_GROUP_API = "api";
-    public static final String CHANNEL_GROUP_DEFAULT = "default";
+    public static final String CHANNEL_GROUP_CONTROL = "control";
     public static final String CHANNEL_GROUP_STATE_ONLY = "state_only";
 
     // Thing Configuration names
