@@ -55,7 +55,8 @@ import com.google.gson.JsonObject;
 @NonNullByDefault
 public class Yeelight2Handler extends BaseThingHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(Yeelight2Handler.class);
+    private final Logger logger = LoggerFactory
+            .getLogger(Yeelight2Handler.class.getName() + "." + thing.getUID().getId());
 
     private @Nullable Yeelight2Configuration config;
     private final Map<YeelightDeviceProperty, String> stateByProp = new HashMap<>();
