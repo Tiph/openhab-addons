@@ -40,6 +40,7 @@
         <channels>
             <channel id="power" typeId="power"/>
             <channel id="delayoff" typeId="delayoff"/>
+            <channel id="music_on" typeId="music_on"/>
 
             <channel id="main_power" typeId="main_power"/>
             <channel id="active_mode" typeId="active_mode"/>
@@ -67,6 +68,8 @@
 		<label>Command</label>
 		<description>Send a Command Directly to the Device.</description>
 	</channel-type>
+	
+
 
 	<!-- Power Channel -->
 	<channel-type id="power">
@@ -84,6 +87,14 @@
 		<category>Time</category>
 		<state min="0" max="60" step="1" pattern="%d %unit%" readOnly="true"/>
 	</channel-type>
+	
+    <!-- Music Mode Channel -->
+    <channel-type id="music_on">
+        <item-type>Switch</item-type>
+        <label>Music Mode</label>
+        <description>Music Mode</description>
+        <state readOnly="true"/>
+    </channel-type>
 
 	<!-- Main Power Channel -->
 	<channel-type id="main_power">
@@ -170,7 +181,6 @@
 		<description>Current Flow Parameters.</description>
 		<state readOnly="true"/>
 	</channel-type>
-
 
 	<!-- Background Power Channel -->
 	<channel-type id="bg_power">

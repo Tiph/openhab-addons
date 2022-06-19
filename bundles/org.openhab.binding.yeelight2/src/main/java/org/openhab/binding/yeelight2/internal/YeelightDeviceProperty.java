@@ -22,6 +22,7 @@ public enum YeelightDeviceProperty {
     // Global
     POWER("power", "set_power", OnOffType.class, OnOffType::from),
     DELAYOFF("delayoff", null, StringType.class, StringType::valueOf),
+    MUSIC_MODE("music_on", null, OnOffType.class, OnOffType::from),
 
     // Main
     MAIN_POWER("main_power", "set_power", OnOffType.class, OnOffType::from),
@@ -94,7 +95,7 @@ public enum YeelightDeviceProperty {
             this.channelProperty = this;
         } else {
             this.channelProperty = channelProperty;
-    }
+        }
     }
 
     public String getPropertyName() {
