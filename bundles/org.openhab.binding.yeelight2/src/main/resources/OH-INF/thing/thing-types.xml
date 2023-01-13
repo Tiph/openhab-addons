@@ -27,7 +27,7 @@
 			</parameter>
 			<parameter name="refresh_interval" type="integer" min="10" max="86400" unit="s" required="true">
                 <label>Refresh interval (s)</label>
-                <description>The delay between to refresh (send a property request each refresh_interval)</description>
+                <description>The delay between two refresh (send a property request each refresh_interval)</description>
                 <default>60</default>
             </parameter>
             <parameter name="reconnect_interval" type="integer" min="10" max="86400" unit="s" required="true">
