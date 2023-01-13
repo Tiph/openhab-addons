@@ -16,7 +16,6 @@ import static org.openhab.binding.yeelight2.internal.Yeelight2BindingConstants.*
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -195,14 +194,8 @@ public class Yeelight2Handler extends BaseThingHandler {
             socketChannel.configureBlocking(false);
             selectorProvider.register(socketChannel, this);
             setOnline();
-        } catch (ConnectException e) {
-            logger.warn("Thing not reachable: {}", e.toString());
-            setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
-            if (logger.isDebugEnabled()) {
-                logger.error(e.getMessage(), e);
-            }
         } catch (IOException e) {
-            logger.warn("Error while starting client: {}", e.toString());
+            logger.warn("Thing not reachable: {}", e.toString());
             setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
             if (logger.isDebugEnabled()) {
                 logger.error(e.getMessage(), e);
