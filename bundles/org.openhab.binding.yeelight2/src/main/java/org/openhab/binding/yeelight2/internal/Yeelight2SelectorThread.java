@@ -76,8 +76,9 @@ public class Yeelight2SelectorThread extends Thread implements Yeelight2Selector
                         while (readerBb.hasRemaining()) {
                             char c = (char) readerBb.get();
                             if (c == '\r') {
-                                continue; // ignore \r\n
+                                continue; // ignore '\r' from the "\r\n" string
                             } else if (c == '\n') {
+                                // end of message
                                 // /!\ presume that messages are not cut /!\
                                 thingHandler.handleMessage(sb.toString());
                                 sb.setLength(0); // reset for next msg
@@ -86,8 +87,7 @@ public class Yeelight2SelectorThread extends Thread implements Yeelight2Selector
                             }
                         }
                     } else if (read == -1) {
-                        logger.error("End of socket");
-                        thingHandler.setOffline(ThingStatusDetail.COMMUNICATION_ERROR, "Socket down");
+                        throw new IOException("End of Socket");
                     } else {
                         logger.error("Socket empty");
                     }

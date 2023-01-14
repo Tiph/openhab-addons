@@ -19,20 +19,21 @@ import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.library.types.HSBType;
-import org.openhab.core.library.types.StringType;
+import org.openhab.binding.yeelight2.internal.action.Yeelight2Action;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.binding.BaseThingHandler;
+import org.openhab.core.thing.binding.ThingHandlerService;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
@@ -58,9 +59,11 @@ public class Yeelight2Handler extends BaseThingHandler {
             .getLogger(Yeelight2Handler.class.getName() + "." + thing.getUID().getId());
 
     private @Nullable Yeelight2Configuration config;
-    private final Map<YeelightDeviceProperty, String> stateByProp = new HashMap<>();
 
-    private @Nullable final Yeelight2Selector selectorProvider;
+    // Used to keep last state of the property and also to determine if a channel is available on this Thing
+    private final EnumMap<YeelightDeviceProperty, String> stateByProp = new EnumMap<>(YeelightDeviceProperty.class);
+
+    private final @Nullable Yeelight2Selector selectorProvider;
 
     private @Nullable SocketChannel socketChannel;
     private final ByteBuffer senderBb = ByteBuffer.allocateDirect(3072);
@@ -84,12 +87,6 @@ public class Yeelight2Handler extends BaseThingHandler {
 
     @Override
     public void channelLinked(ChannelUID channelUID) {
-        String id = channelUID.getIdWithoutGroup();
-
-        if (id.equals(CHANNEL_COMMAND)) {
-            return;
-        }
-
         handleCommand(channelUID, RefreshType.REFRESH);
     }
 
@@ -101,18 +98,8 @@ public class Yeelight2Handler extends BaseThingHandler {
             YeelightDeviceProperty property = YeelightDeviceProperty.fromPropertyName(id);
             String value = stateByProp.get(property);
             if (value != null) {
-                updateState(property, value, true);
+                updateState(property, value);
             }
-            return;
-        }
-
-        if (CHANNEL_GROUP_STATE_ONLY.equals(channelUID.getGroupId())) {
-            // drop command from channel state only
-            return;
-        }
-
-        if (id.equals(CHANNEL_COMMAND) && command instanceof StringType && !command.toString().isEmpty()) {
-            sendCommand(command.toString());
             return;
         }
 
@@ -126,40 +113,15 @@ public class Yeelight2Handler extends BaseThingHandler {
             cmdBuilder.append(prop.getSetterName()); // set_power
             cmdBuilder.append("\","); // ",
             cmdBuilder.append("\"params\":["); // "params":[
-
-            String stringValue;
-            switch (prop) {
-                case POWER:
-                case BG_POWER:
-                case MAIN_POWER:
-                    stringValue = command.toFullString().toLowerCase();
-                    cmdBuilder.append("\"");
-                    cmdBuilder.append(stringValue);
-                    cmdBuilder.append("\"");
-                    break;
-                case RGB:
-                case BG_RGB:
-                    HSBType v = (HSBType) command;
-                    stringValue = Integer.toString(v.getRGB() & 0xFFFFFF);
-                    cmdBuilder.append(stringValue);
-                    break;
-                default:
-                    stringValue = command.toFullString();
-                    cmdBuilder.append(stringValue);
-                    break;
-            }
+            cmdBuilder.append(prop.getTypeToApiMappingFunction().apply(command)); // param value
             cmdBuilder.append(","); // ,
-            if (config.smooth) {
+            if (config.isSmooth()) {
                 cmdBuilder.append("\"smooth\","); // "smooth",
-                cmdBuilder.append(config.smooth_duration); // 500
+                cmdBuilder.append(config.getSmoothDuration()); // 500
             } else {
                 cmdBuilder.append("\"sudden\""); // "sudden",
             }
             cmdBuilder.append("]}"); // ]}
-
-            // Update state to change the "stateByProp" property in case we change something that cannot be change
-            // e.g. changing brightness while light is off
-            updateState(prop, stringValue, false);
 
             sendCommand(cmdBuilder.toString());
         }
@@ -169,15 +131,12 @@ public class Yeelight2Handler extends BaseThingHandler {
     public void initialize() {
         config = getConfigAs(Yeelight2Configuration.class);
         updateStatus(ThingStatus.UNKNOWN);
-
-        scheduler.execute(() -> {
-            startClient();
-        });
+        scheduler.execute(this::startClient);
     }
 
     @Override
     public void dispose() {
-        logger.trace("Disposing: {}", config.id);
+        logger.trace("Disposing: {}", thing.getUID());
         stopClient();
 
         if (reconnectTask != null) {
@@ -190,16 +149,16 @@ public class Yeelight2Handler extends BaseThingHandler {
         logger.trace("Starting client");
         try {
             socketChannel = SocketChannel
-                    .open(new InetSocketAddress(config.ip, Yeelight2BindingConstants.YEELIGHT_PORT));
+                    .open(new InetSocketAddress(config.getIp(), Yeelight2BindingConstants.YEELIGHT_PORT));
             socketChannel.configureBlocking(false);
             selectorProvider.register(socketChannel, this);
             setOnline();
         } catch (IOException e) {
             logger.warn("Thing not reachable: {}", e.toString());
-            setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
             if (logger.isDebugEnabled()) {
                 logger.error(e.getMessage(), e);
             }
+            setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
         }
     }
 
@@ -218,9 +177,9 @@ public class Yeelight2Handler extends BaseThingHandler {
         }
     }
 
-    private void sendCommand(String jsonCmd) {
+    public void sendCommand(String jsonCmd) {
         logger.debug("Sending command: {}", jsonCmd);
-        if (socketChannel.isConnected() && getThing().getStatus() == ThingStatus.ONLINE) {
+        if (socketChannel != null && socketChannel.isConnected() && getThing().getStatus() == ThingStatus.ONLINE) {
             senderBb.clear();
             senderBb.put(jsonCmd.getBytes());
             senderBb.put((byte) '\r'); // CR endings
@@ -228,7 +187,7 @@ public class Yeelight2Handler extends BaseThingHandler {
             try {
                 socketChannel.write(senderBb.flip());
             } catch (IOException e) {
-                logger.error("Error while sending command: {}", jsonCmd);
+                logger.error("Error while sending command: {}, Exception: {}", jsonCmd, e.getMessage());
             }
         }
     }
@@ -239,7 +198,9 @@ public class Yeelight2Handler extends BaseThingHandler {
         if (json != null) {
             JsonElement id = json.get("id");
             JsonElement method = json.get("method");
-            if (id != null && json.get("error") != null) {
+            if (id != null && id.getAsInt() != ID_ALL_PROP_QUERY && id.getAsInt() != ID_ACTION_QUERY) {
+                // If result is not from internal command update "command result" channel
+            } else if (id != null && json.get("error") != null) {
                 logger.debug("Invalid command");
             } else if (id != null) {
                 handleResponse(id.getAsInt(), json.get("result").getAsJsonArray());
@@ -249,13 +210,11 @@ public class Yeelight2Handler extends BaseThingHandler {
         }
     }
 
-    private void updateState(YeelightDeviceProperty property, String value, boolean forceUpdate) {
-        if (!value.isEmpty() && (!value.equals(stateByProp.put(property, value)) || forceUpdate)) {
-            ChannelUID stateOnlyChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_STATE_ONLY,
+    private void updateState(YeelightDeviceProperty property, String value) {
+        if (!value.isEmpty()) {
+            stateByProp.put(property, value);
+            ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), property.getChannelGroupId(),
                     property.getPropertyName());
-            ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_CONTROL,
-                    property.getPropertyName());
-            updateState(stateOnlyChannelUID, (State) property.getType(value));
             updateState(defaultChannelUID, (State) property.getType(value));
         }
     }
@@ -266,11 +225,10 @@ public class Yeelight2Handler extends BaseThingHandler {
 
         for (YeelightDeviceProperty p : YeelightDeviceProperty.values()) {
             if (!stateByProp.containsKey(p.getChannelProperty())) {
-                ChannelUID stateOnlyChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_STATE_ONLY,
+                logger.debug("hidding channel: {}", p.getPropertyName());
+                ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), p.getChannelGroupId(),
                         p.getPropertyName());
-                ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), CHANNEL_GROUP_CONTROL,
-                        p.getPropertyName());
-                thingBuilder.withoutChannel(defaultChannelUID).withoutChannel(stateOnlyChannelUID);
+                thingBuilder.withoutChannel(defaultChannelUID);
             }
         }
         updateThing(thingBuilder.build());
@@ -286,14 +244,13 @@ public class Yeelight2Handler extends BaseThingHandler {
     private void handleResponse(int id, JsonArray result) {
         if (id == ID_ALL_PROP_QUERY && result.size() == YeelightDeviceProperty.values().length) {
             for (YeelightDeviceProperty p : YeelightDeviceProperty.values()) {
-                updateState(p, result.get(p.ordinal()).getAsString(), false);
+                updateState(p, result.get(p.ordinal()).getAsString());
             }
             // Check and remove unsupported channels
             if (checkChannel) {
                 hideChannelIfNotSupported();
                 checkChannel = false;
             }
-        } else {
         }
     }
 
@@ -306,8 +263,7 @@ public class Yeelight2Handler extends BaseThingHandler {
         for (String propName : props.keySet()) {
             YeelightDeviceProperty prop = YeelightDeviceProperty.fromPropertyName(propName);
             if (prop != null) {
-                updateState(YeelightDeviceProperty.fromPropertyName(propName), props.get(propName).getAsString(),
-                        false);
+                updateState(YeelightDeviceProperty.fromPropertyName(propName), props.get(propName).getAsString());
             }
         }
     }
@@ -318,40 +274,21 @@ public class Yeelight2Handler extends BaseThingHandler {
             reconnectTask.cancel(true);
             reconnectTask = null;
         }
-        heartbeatTask = scheduler.scheduleAtFixedRate(() -> {
-            sendCommand(GET_PROP_QUERY);
-        }, 0, refreshInterval, TimeUnit.SECONDS);
+        heartbeatTask = scheduler.scheduleAtFixedRate(() -> sendCommand(GET_PROP_QUERY), 0, refreshInterval,
+                TimeUnit.SECONDS);
     }
 
     public void setOffline(ThingStatusDetail thingStatusDetail, String description) {
         updateStatus(ThingStatus.OFFLINE, thingStatusDetail, description);
         stopClient();
         if (reconnectTask == null) {
-            reconnectTask = scheduler.scheduleWithFixedDelay(() -> {
-                startClient();
-            }, 0, reconnectInterval, TimeUnit.SECONDS);
+            reconnectTask = scheduler.scheduleWithFixedDelay(this::startClient, 0, reconnectInterval, TimeUnit.SECONDS);
         }
     }
 
-    // private void updateChannels() {
-    // String a = BG_RGB.getPropertyName();
-    // ChannelBuilder powerChannel = ChannelBuilder.create(new ChannelUID(thing.getUID(), a))
-    // .withType(new ChannelTypeUID(Yeelight2BindingConstants.BINDING_ID, a));
-    // updateThing(editThing().withChannel(powerChannel.build()).build());
-    // a = BRIGHTNESS.getPropertyName();
-    // powerChannel = ChannelBuilder.create(new ChannelUID(thing.getUID(), a))
-    // .withType(new ChannelTypeUID(Yeelight2BindingConstants.BINDING_ID, a));
-    // updateThing(editThing().withChannel(powerChannel.build()).build());
-    // a = COLOR_TEMPERATURE.getPropertyName();
-    // powerChannel = ChannelBuilder.create(new ChannelUID(thing.getUID(), a))
-    // .withType(new ChannelTypeUID(Yeelight2BindingConstants.BINDING_ID, a));
-    // updateThing(editThing().withChannel(powerChannel.build()).build());
-    // a = RGB.getPropertyName();
-    //
-    // a = COLOR_MODE.getPropertyName();
-    // powerChannel = ChannelBuilder.create(new ChannelUID(thing.getUID(), a))
-    // .withType(new ChannelTypeUID(Yeelight2BindingConstants.BINDING_ID, a));
-    // updateThing(editThing().withChannel(powerChannel.build()).build());
-    //
-    // }
+    @Override
+    public Collection<Class<? extends ThingHandlerService>> getServices() {
+        return Collections.singleton(Yeelight2Action.class);
+    }
+
 }

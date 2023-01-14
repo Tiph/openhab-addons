@@ -29,21 +29,17 @@ public class Yeelight2BindingConstants {
     // Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_BASE = new ThingTypeUID(BINDING_ID, "base");
 
-    // List of all Channel ids
-    public static final String CHANNEL_COMMAND = "command";
-
     // List of all Channel Group
-    public static final String CHANNEL_GROUP_API = "api";
-    public static final String CHANNEL_GROUP_CONTROL = "control";
-    public static final String CHANNEL_GROUP_STATE_ONLY = "state_only";
+    public static final String CHANNEL_GROUP_DEFAULT = "default";
+    public static final String CHANNEL_GROUP_BACKGROUND = "background";
 
     // Thing Configuration names
     public static final String PARAMETER_IP = "ip";
     public static final String PARAMETER_ID = "id";
-    public static final String PARAMETER_REFRESH_INTERVAL = "refresh_interval";
-    public static final String PARAMETER_RECONNECT_INTERVAL = "reconnect_interval";
+    public static final String PARAMETER_REFRESH_INTERVAL = "refreshInterval";
+    public static final String PARAMETER_RECONNECT_INTERVAL = "reconnectInterval";
     public static final String PARAMETER_SMOOTH = "smooth";
-    public static final String PARAMETER_SMOOTH_DURATION = "smooth_duration";
+    public static final String PARAMETER_SMOOTH_DURATION = "smoothDuration";
 
     // Thing Properties names
     public static final String NAME = "Name";
@@ -73,4 +69,9 @@ public class Yeelight2BindingConstants {
         cmd += "]}";
         GET_PROP_QUERY = cmd;
     }
+
+    // Do not instanciate this class
+    private Yeelight2BindingConstants() {
+    }
+
 }

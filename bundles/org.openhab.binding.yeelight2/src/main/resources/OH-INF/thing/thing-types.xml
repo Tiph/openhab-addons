@@ -10,9 +10,8 @@
 		<description>Generic Thing for Yeelight Binding</description>
 
         <channel-groups>
-	       <channel-group id="api" typeId="api" />
-	       <channel-group id="control" typeId="control" />
-	       <channel-group id="state_only" typeId="state_only" />
+	       <channel-group id="default" typeId="default" /> 
+	       <channel-group id="background" typeId="background" />
 	    </channel-groups>
 
 		<config-description>
@@ -21,16 +20,16 @@
 				<label>Ip</label>
 				<description>Ip Address of the Device.</description>
 			</parameter>
-			<parameter name="id" type="text" required="true" pattern="^0x[0-9a-fA-F]{16}$">
+			<parameter name="id" type="text" required="false" pattern="^0x[0-9a-fA-F]{16}$">
 				<label>Id</label>
 				<description>Device Id. e.g. '0x000000000015243f'</description>
 			</parameter>
-			<parameter name="refresh_interval" type="integer" min="10" max="86400" unit="s" required="true">
+			<parameter name="refreshInterval" type="integer" min="10" max="86400" unit="s" required="true">
                 <label>Refresh interval (s)</label>
-                <description>The delay between two refresh (send a property request each refresh_interval)</description>
+                <description>The delay between two refresh (send a property request each refresh interval)</description>
                 <default>60</default>
             </parameter>
-            <parameter name="reconnect_interval" type="integer" min="10" max="86400" unit="s" required="true">
+            <parameter name="reconnectInterval" type="integer" min="10" max="86400" unit="s" required="true">
                 <label>Reconnect interval (s)</label>
                 <description>The delay to wait for the next reconnection after a fail</description>
                 <default>60</default>
@@ -40,7 +39,7 @@
 				<description>If true the transition between state will be smooth. Immediate otherwise</description>
 				<default>true</default>
 			</parameter>
-			<parameter name="smooth_duration" type="integer" min="30" max="10000" unit="ms" required="true">
+			<parameter name="smoothDuration" type="integer" min="30" max="10000" unit="ms" required="true">
 				<label>Smooth duration (ms)</label>
 				<description>The Duration of the Smooth Transition in millisecond</description>
 				<default>500</default>

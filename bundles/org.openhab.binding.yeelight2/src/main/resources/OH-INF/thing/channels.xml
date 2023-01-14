@@ -7,36 +7,9 @@
 
 	<!-- https://www.openhab.org/docs/developer/bindings/thing-xml.html#system-trigger-channel-types -->
 	
-	<channel-group-type id="api">
-        <label>API</label>
-        <description>These channels are for API manipulation</description>
-        <channels>
-            <channel id="command" typeId="command"/>
-       </channels>
-    </channel-group-type>
-	
-    <channel-group-type id="control">
-        <label>Control</label>
-        <description>These channels will report state and control the thing with the default command</description>
-        <channels>
-            <channel id="power" typeId="power"/>
-
-            <channel id="main_power" typeId="main_power"/>
-            <channel id="bright" typeId="bright"/>
-			<channel id="nl_br" typeId="nl_br"/>
-			<channel id="ct" typeId="ct"/>
-			<channel id="rgb" typeId="rgb"/>
-				
-			<channel id="bg_power" typeId="bg_power"/>
-			<channel id="bg_ct" typeId="bg_ct"/>
-			<channel id="bg_bright" typeId="bg_bright"/>
-			<channel id="bg_rgb" typeId="bg_rgb"/>
-       </channels>
-    </channel-group-type>
-    
-    <channel-group-type id="state_only">
-        <label>State only</label>
-        <description>These channels will report state but will drop command (useful if you want to make a rules with custom behavior)</description>
+    <channel-group-type id="default">
+        <label>Default</label>
+        <description>These channels controls the main light</description>
         <channels>
             <channel id="power" typeId="power"/>
             <channel id="delayoff" typeId="delayoff"/>
@@ -51,7 +24,13 @@
             <channel id="color_mode" typeId="color_mode"/>
             <channel id="flowing" typeId="flowing"/>
             <channel id="flow_params" typeId="flow_params"/>
-                
+       </channels>
+    </channel-group-type>
+    
+    <channel-group-type id="background">
+        <label>Background</label>
+        <description>These channels controls the background light</description>
+        <channels>
             <channel id="bg_power" typeId="bg_power"/>
             <channel id="bg_ct" typeId="bg_ct"/>
             <channel id="bg_bright" typeId="bg_bright"/>
@@ -61,22 +40,30 @@
             <channel id="bg_flow_params" typeId="bg_flow_params"/>
        </channels>
     </channel-group-type>
-	
+    
 	<!-- Command Channel -->
 	<channel-type id="command" advanced="true">
 		<item-type>String</item-type>
 		<label>Command</label>
 		<description>Send a Command Directly to the Device.</description>
 	</channel-type>
-	
-
+    <channel-type id="commandResult" advanced="true">
+        <item-type>String</item-type>
+        <label>Command Result</label>
+        <description>Shows the result from the last command sent with the command channel.</description>
+        <state readOnly="true"/>
+    </channel-type>
 
 	<!-- Power Channel -->
 	<channel-type id="power">
 		<item-type>Switch</item-type>
 		<label>Power</label>
 		<description>Power Status</description>
-		<category>Light</category>
+		<category>Switch</category>
+		<tags>
+            <tag>Switch</tag>
+            <tag>Power</tag>
+		</tags>
 	</channel-type>
 	
 	<!-- Delay Off Channel -->
@@ -101,7 +88,11 @@
 		<item-type>Switch</item-type>
 		<label>Main Power</label>
 		<description>Main Power Status</description>
-		<category>Light</category>
+        <category>Switch</category>
+        <tags>
+            <tag>Switch</tag>
+            <tag>Power</tag>
+        </tags>
 	</channel-type>
 
 	<!-- Active mode Channel -->
@@ -109,7 +100,6 @@
 		<item-type>String</item-type>
 		<label>Active Mode</label>
 		<description>Active Mode (Sun/Moon)</description>
-		<category>Light</category>
         <state readOnly="true">
             <options>
                 <option value="SUN">Sun</option>
@@ -124,6 +114,10 @@
 		<label>Brightness</label>
 		<description>Brightness Percentage. Range 1 ~ 100</description>
 		<category>Light</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>Light</tag>
+        </tags>
 		<state min="1" max="100" step="1" pattern="%d %"></state>
 	</channel-type>
 
@@ -133,6 +127,10 @@
 		<label>Moon Brightness</label>
 		<description>Moon Brightness Percentage. Range 1 ~ 100</description>
 		<category>Light</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>Light</tag>
+        </tags>
 		<state min="1" max="100" step="1" pattern="%d %"></state>
 	</channel-type>
 
@@ -141,7 +139,11 @@
 		<item-type>Number</item-type>
 		<label>Color Temperature</label>
 		<description>Color Temperature. Range 1700 ~ 6500(K)</description>
-		<category>Light</category>
+		<category>ColorLight</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>ColorTemperature</tag>
+        </tags>
 		<state min="1700" max="6500" step="1" pattern="%d K"></state>
 	</channel-type>
 
@@ -151,11 +153,15 @@
 		<label>Color</label>
 		<description>Color</description>
 		<category>ColorLight</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>Light</tag>
+        </tags>
 	</channel-type>
 	<channel-type id="color_mode">
 		<item-type>String</item-type>
 		<label>Color Mode</label>
-		<description>Color Mode</description>
+		<description>Color Mode (RGB, CT or HSV)</description>
 		<category>ColorLight</category>
 		<state readOnly="true">
 			<options>
@@ -187,7 +193,11 @@
 		<item-type>Switch</item-type>
 		<label>Background Power</label>
 		<description>Background Power Status</description>
-		<category>Light</category>
+        <category>Switch</category>
+        <tags>
+            <tag>Switch</tag>
+            <tag>Power</tag>
+        </tags>
 	</channel-type>
 
 	<!-- Background Color Temperature Channel -->
@@ -195,7 +205,11 @@
 		<item-type>Number</item-type>
 		<label>Background Color Temperature</label>
 		<description>Background Color Temperature. Range 1700 ~ 6500(K)</description>
-		<category>Light</category>
+        <category>ColorLight</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>ColorTemperature</tag>
+        </tags>
 		<state min="1700" max="6500" step="1" pattern="%d K"></state>
 	</channel-type>
 
@@ -204,7 +218,11 @@
 		<item-type>Dimmer</item-type>
 		<label>Background Brightness</label>
 		<description>Background Brightness Percentage. Range 1 ~ 100</description>
-		<category>Light</category>
+        <category>Light</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>Light</tag>
+        </tags>
 		<state min="1" max="100" step="1" pattern="%d %"></state>
 	</channel-type>
 
@@ -213,7 +231,11 @@
 		<item-type>Color</item-type>
 		<label>Background Color</label>
 		<description>Background Color</description>
-		<category>ColorLight</category>
+        <category>ColorLight</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>Light</tag>
+        </tags>
 	</channel-type>
 
 	<channel-type id="bg_lmode">
@@ -245,8 +267,6 @@
 		<description>Current Background Flow Parameters.</description>
 		<state readOnly="true"/>
 	</channel-type>
-
-
 
 
 </thing:thing-descriptions>

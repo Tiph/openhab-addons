@@ -17,10 +17,36 @@ package org.openhab.binding.yeelight2.internal;
  *
  * @author Tiph - Initial contribution
  */
+
 public class Yeelight2Configuration {
 
-    public String ip;
-    public String id;
-    public boolean smooth;
-    public int smooth_duration;
+    private String ip;
+    private String id;
+    private boolean smooth;
+    private int refreshInterval;
+    private int reconnectInterval;
+    private int smoothDuration;
+    
+    
+    public String getIp() {
+        return ip;
+    }
+    public String getId() {
+        return id;
+    }
+    public boolean isSmooth() {
+        return smooth;
+    }
+    public int getRefreshInterval() {
+        return refreshInterval;
+    }
+    public int getReconnectInterval() {
+        return reconnectInterval;
+    }
+    public int getSmoothDuration() {
+        return smoothDuration;
+    }
+    
+    
+
 }
