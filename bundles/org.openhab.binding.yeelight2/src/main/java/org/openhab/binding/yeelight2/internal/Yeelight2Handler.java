@@ -22,12 +22,15 @@ import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.yeelight2.internal.action.Yeelight2Action;
+import org.openhab.binding.yeelight2.internal.device.property.YeelightDeviceProperty;
+import org.openhab.binding.yeelight2.internal.device.property.YeelightDevicePropertySetterMethod;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
@@ -37,7 +40,6 @@ import org.openhab.core.thing.binding.ThingHandlerService;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
-import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,24 +98,24 @@ public class Yeelight2Handler extends BaseThingHandler {
 
         if (command instanceof RefreshType) {
             YeelightDeviceProperty property = YeelightDeviceProperty.fromPropertyName(id);
-            String value = stateByProp.get(property);
-            if (value != null) {
-                updateState(property, value);
+            if (stateByProp.containsKey(property)) {
+                updateState(property, stateByProp.get(property));
             }
             return;
         }
 
-        YeelightDeviceProperty prop = YeelightDeviceProperty.fromPropertyName(id);
-        if (prop.getAssociatedType() == command.getClass()) {
+        Optional<YeelightDevicePropertySetterMethod> propSetter = YeelightDeviceProperty.fromPropertyName(id)
+                .getSetter();
+        if (propSetter.isPresent()) {
             cmdBuilder.setLength(0);
             cmdBuilder.append("{\"id\":"); // {"id":
             cmdBuilder.append(ID_ACTION_QUERY); // 1
             cmdBuilder.append(","); // ,
             cmdBuilder.append("\"method\":\""); // "method":"
-            cmdBuilder.append(prop.getSetterName()); // set_power
+            cmdBuilder.append(propSetter.get().getName()); // set_power
             cmdBuilder.append("\","); // ",
             cmdBuilder.append("\"params\":["); // "params":[
-            cmdBuilder.append(prop.getTypeToApiMappingFunction().apply(command)); // param value
+            cmdBuilder.append(propSetter.get().getValue(command)); // param value
             cmdBuilder.append(","); // ,
             if (config.isSmooth()) {
                 cmdBuilder.append("\"smooth\","); // "smooth",
@@ -215,7 +217,7 @@ public class Yeelight2Handler extends BaseThingHandler {
             stateByProp.put(property, value);
             ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), property.getChannelGroupId(),
                     property.getPropertyName());
-            updateState(defaultChannelUID, (State) property.getType(value));
+            updateState(defaultChannelUID, property.getState(value));
         }
     }
 

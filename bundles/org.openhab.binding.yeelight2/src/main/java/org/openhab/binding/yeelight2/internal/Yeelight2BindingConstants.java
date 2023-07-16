@@ -13,6 +13,7 @@
 package org.openhab.binding.yeelight2.internal;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.yeelight2.internal.device.property.YeelightDeviceProperty;
 import org.openhab.core.thing.ThingTypeUID;
 
 /**
