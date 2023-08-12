@@ -10,7 +10,7 @@ import static org.openhab.binding.yeelight2.internal.Yeelight2BindingConstants.C
 abstract class AbstractYeelightBGProperty implements IYeelightDeviceProperty {
 
     @Override
-    public String getChannelGroupId() {
+    public final String getChannelGroupId() {
         return CHANNEL_GROUP_BACKGROUND;
     }
 

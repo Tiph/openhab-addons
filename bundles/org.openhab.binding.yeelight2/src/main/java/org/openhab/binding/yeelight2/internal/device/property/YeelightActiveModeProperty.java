@@ -17,12 +17,19 @@ class YeelightActiveModeProperty extends AbstractYeelightMainProperty {
 
     @Override
     public State getState(String val) {
-        if ("0".equals(val)) {
-            return StringType.valueOf("SUN");
-        } else if ("1".equals(val)) {
-            return StringType.valueOf("MOON");
+        switch (val) {
+            case "0":
+                return StringType.valueOf("SUN");
+            case "1":
+                return StringType.valueOf("MOON");
+            default:
+                return StringType.valueOf(val);
         }
-        return StringType.valueOf("NULL");
+    }
+
+    @Override
+    public Class<? extends State> getOHType() {
+        return StringType.class;
     }
 
 }

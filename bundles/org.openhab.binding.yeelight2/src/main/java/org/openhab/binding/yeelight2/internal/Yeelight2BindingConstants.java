@@ -23,7 +23,7 @@ import org.openhab.core.thing.ThingTypeUID;
  * @author Tiph - Initial contribution
  */
 @NonNullByDefault
-public class Yeelight2BindingConstants {
+public final class Yeelight2BindingConstants {
 
     public static final String BINDING_ID = "yeelight2";
 

@@ -12,13 +12,12 @@ class YeelightMusicModeProperty extends AbstractYeelightMainProperty {
 
     @Override
     public String getPropertyName() {
-        // TODO Auto-generated method stub
         return "music_on";
     }
 
     @Override
-    public State getState(String val) {
-        return OnOffType.from(val);
+    public Class<? extends State> getOHType() {
+        return OnOffType.class;
     }
 
 }

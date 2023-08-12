@@ -1,7 +1,5 @@
 package org.openhab.binding.yeelight2.internal.device.property;
 
-import java.util.function.Function;
-
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
 
@@ -19,20 +17,25 @@ class YeelightColorModeProperty extends AbstractYeelightMainProperty {
 
     @Override
     public State getState(String val) {
-        return COLOR_MODE_STATE_MAPPING.apply(val);
+        return super.getState(getColorModeStateValue(val));
     }
 
-    static final Function<String, State> COLOR_MODE_STATE_MAPPING = v -> {
-        switch (v) {
+    @Override
+    public Class<? extends State> getOHType() {
+        return StringType.class;
+    }
+
+    static final String getColorModeStateValue(String val) {
+        switch (val) {
             case "1":
-                return StringType.valueOf("RGB");
+                return "RGB";
             case "2":
-                return StringType.valueOf("CT");
+                return "CT";
             case "3":
-                return StringType.valueOf("HSV");
+                return "HSV";
             default:
-                return StringType.valueOf("NULL");
+                return val;
         }
-    };
+    }
 
 }

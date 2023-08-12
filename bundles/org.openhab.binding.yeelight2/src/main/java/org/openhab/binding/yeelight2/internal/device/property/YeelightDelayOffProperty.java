@@ -16,8 +16,8 @@ class YeelightDelayOffProperty extends AbstractYeelightMainProperty {
     }
 
     @Override
-    public State getState(String val) {
-        return StringType.valueOf(val);
+    public Class<? extends State> getOHType() {
+        return StringType.class;
     }
 
 }

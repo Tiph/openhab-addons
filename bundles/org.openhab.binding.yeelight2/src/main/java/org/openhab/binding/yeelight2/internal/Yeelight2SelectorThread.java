@@ -11,7 +11,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import org.openhab.core.thing.ThingStatusDetail;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -28,6 +27,7 @@ public class Yeelight2SelectorThread extends Thread implements Yeelight2Selector
     private final StringBuilder sb = new StringBuilder();
 
     public Yeelight2SelectorThread() throws IOException {
+        setName("Yeelight2 Thread");
     }
 
     @Activate
@@ -65,11 +65,11 @@ public class Yeelight2SelectorThread extends Thread implements Yeelight2Selector
             SelectionKey key = selectedKeys.next();
             selectedKeys.remove();
 
-            SocketChannel channel = (SocketChannel) key.channel();
             Yeelight2Handler thingHandler = (Yeelight2Handler) key.attachment();
 
             if (key.isReadable()) {
                 try {
+                    SocketChannel channel = (SocketChannel) key.channel();
                     int read = channel.read(readerBb.clear());
                     readerBb.flip();
                     if (read > 0) {
@@ -93,7 +93,7 @@ public class Yeelight2SelectorThread extends Thread implements Yeelight2Selector
                     }
                 } catch (IOException e) {
                     logger.error("Error on socket", e);
-                    thingHandler.setOffline(ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
+                    thingHandler.handleSocketException(e);
                 }
             }
         }

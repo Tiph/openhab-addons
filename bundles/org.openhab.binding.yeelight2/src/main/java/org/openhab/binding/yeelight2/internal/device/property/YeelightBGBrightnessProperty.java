@@ -1,9 +1,6 @@
 package org.openhab.binding.yeelight2.internal.device.property;
 
-import java.util.Optional;
-
 import org.openhab.core.library.types.PercentType;
-import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 
 /**
@@ -11,7 +8,7 @@ import org.openhab.core.types.State;
  * @author Tiph
  *
  */
-class YeelightBGBrightnessProperty extends AbstractYeelightBGProperty {
+class YeelightBGBrightnessProperty extends AbstractYeelightBGProperty implements IYeelightDeviceWritableProperty {
 
     @Override
     public String getPropertyName() {
@@ -19,26 +16,13 @@ class YeelightBGBrightnessProperty extends AbstractYeelightBGProperty {
     }
 
     @Override
-    public State getState(String val) {
-        return PercentType.valueOf(val);
+    public String getSetterName() {
+        return "bg_set_bright";
     }
 
-    @SuppressWarnings("null")
     @Override
-    public Optional<YeelightDevicePropertySetterMethod> getSetter() {
-        return Optional.of(new YeelightDevicePropertySetterMethod() {
-
-            @Override
-            public String getName() {
-                return "bg_set_bright";
-            }
-
-            @Override
-            public String getValue(Command command) {
-                return DEFAULT_TYPE_TO_API.apply(command, PercentType.class);
-            }
-        });
-
+    public Class<? extends State> getOHType() {
+        return PercentType.class;
     }
 
 }

@@ -3,8 +3,8 @@ package org.openhab.binding.yeelight2.internal.device.property;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
+import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 
 /**
@@ -12,7 +12,7 @@ import org.openhab.core.types.State;
  * @author Tiph
  *
  */
-public enum YeelightDeviceProperty implements IYeelightDeviceProperty {
+public enum YeelightDeviceProperty {
 
     // Global
     POWER(new YeelightPowerProperty()),
@@ -44,9 +44,10 @@ public enum YeelightDeviceProperty implements IYeelightDeviceProperty {
     private final IYeelightDeviceProperty deviceProp;
 
     /**
-     * The property to check for a value to determine if channel is supported
+     * The property to check for a value to determine if channel (property) is supported by the device
      */
     private final YeelightDeviceProperty propAvailibility;
+
     private static final Map<String, YeelightDeviceProperty> THIS_BY_PROPERTY_NAME;
 
     private YeelightDeviceProperty(IYeelightDeviceProperty deviceProperty) {
@@ -70,28 +71,40 @@ public enum YeelightDeviceProperty implements IYeelightDeviceProperty {
         return THIS_BY_PROPERTY_NAME.get(value);
     }
 
-    @Override
     public String getChannelGroupId() {
         return deviceProp.getChannelGroupId();
     }
 
-    @Override
     public String getPropertyName() {
         return deviceProp.getPropertyName();
     }
 
-    @Override
     public State getState(String val) {
         return deviceProp.getState(val);
     }
 
-    @Override
-    public Optional<YeelightDevicePropertySetterMethod> getSetter() {
-        return deviceProp.getSetter();
-    }
-
     public YeelightDeviceProperty getChannelProperty() {
         return propAvailibility != null ? propAvailibility : this;
+    }
+
+    public boolean isWrittable() {
+        return deviceProp instanceof IYeelightDeviceWritableProperty;
+    }
+
+    public String getSetterName() {
+        try {
+            return ((IYeelightDeviceWritableProperty) deviceProp).getSetterName();
+        } catch (ClassCastException e) {
+            throw new IllegalCallerException("Property not writtable");
+        }
+    }
+
+    public String getSetterValue(Command command) {
+        try {
+            return ((IYeelightDeviceWritableProperty) deviceProp).getSetterValue(command);
+        } catch (ClassCastException e) {
+            throw new IllegalCallerException("Property not writtable");
+        }
     }
 
 }
