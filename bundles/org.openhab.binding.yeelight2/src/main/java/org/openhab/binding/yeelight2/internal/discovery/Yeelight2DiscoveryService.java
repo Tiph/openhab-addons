@@ -36,16 +36,13 @@ import org.openhab.binding.yeelight2.internal.Yeelight2BindingConstants;
 import org.openhab.binding.yeelight2.internal.Yeelight2HandlerFactory;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
-import org.openhab.core.config.discovery.DiscoveryService;
 import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingUID;
-import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + BINDING_ID)
 public class Yeelight2DiscoveryService extends AbstractDiscoveryService {
 
     private final Logger logger = LoggerFactory.getLogger(Yeelight2DiscoveryService.class);

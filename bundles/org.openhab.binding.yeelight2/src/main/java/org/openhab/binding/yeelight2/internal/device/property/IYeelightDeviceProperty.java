@@ -20,7 +20,7 @@ interface IYeelightDeviceProperty {
         } else if (targetType == PercentType.class) {
             return PercentType.valueOf(val);
         } else if (targetType == DecimalType.class) {
-            DecimalType.valueOf(val);
+            return DecimalType.valueOf(val);
         } else if (targetType == HSBType.class) {
             int intVal = Integer.parseInt(val);
             int r = intVal >>> 16 & 0xFF;

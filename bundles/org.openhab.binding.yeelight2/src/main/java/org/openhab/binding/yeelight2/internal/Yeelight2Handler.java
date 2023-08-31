@@ -17,6 +17,7 @@ import static org.openhab.binding.yeelight2.internal.Yeelight2BindingConstants.*
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.yeelight2.internal.Yeelight2Selector.Yeelight2SocketHandler;
 import org.openhab.binding.yeelight2.internal.action.Yeelight2Action;
 import org.openhab.binding.yeelight2.internal.device.property.YeelightDeviceProperty;
 import org.openhab.core.thing.ChannelUID;
@@ -52,7 +54,7 @@ import com.google.gson.JsonObject;
  * @author Tiph - Initial contribution
  */
 @NonNullByDefault
-public class Yeelight2Handler extends BaseThingHandler {
+public class Yeelight2Handler extends BaseThingHandler implements Yeelight2SocketHandler {
 
     private final Logger logger = LoggerFactory
             .getLogger(Yeelight2Handler.class.getName() + "." + thing.getUID().getId());
@@ -65,7 +67,9 @@ public class Yeelight2Handler extends BaseThingHandler {
     private final @Nullable Yeelight2Selector selectorProvider;
 
     private @Nullable SocketChannel socketChannel;
-    private final ByteBuffer senderBb = ByteBuffer.allocateDirect(3072);
+    private final ByteBuffer socketWriterBB = ByteBuffer.allocateDirect(1024);
+    private final ByteBuffer socketReaderBB = ByteBuffer.allocateDirect(1024);
+    private final StringBuilder socketMessageSB = new StringBuilder();
 
     private final StringBuilder cmdBuilder = new StringBuilder();
 
@@ -192,7 +196,7 @@ public class Yeelight2Handler extends BaseThingHandler {
         }
     }
 
-    protected void handleSocketException(IOException e) {
+    private void handleSocketException(IOException e) {
         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.toString());
         stopClient();
         startReconnectTask();
@@ -201,28 +205,29 @@ public class Yeelight2Handler extends BaseThingHandler {
     public void sendCommand(String jsonCmd) {
         logger.debug("Sending command: {}", jsonCmd);
         if (socketChannel != null && socketChannel.isConnected() && getThing().getStatus() == ThingStatus.ONLINE) {
-            senderBb.clear();
-            senderBb.put(jsonCmd.getBytes());
-            senderBb.put((byte) '\r'); // CR endings
-            senderBb.put((byte) '\n'); // LF endings
+            socketWriterBB.clear();
+            socketWriterBB.put(jsonCmd.getBytes());
+            socketWriterBB.put((byte) '\r'); // CR endings
+            socketWriterBB.put((byte) '\n'); // LF endings
             try {
-                socketChannel.write(senderBb.flip());
+                socketChannel.write(socketWriterBB.flip());
             } catch (IOException e) {
                 logger.error("Error while sending command: {}, Exception: {}", jsonCmd, e.getMessage());
             }
         }
     }
 
-    public void handleMessage(String msg) {
+    private void onMessage(String msg) {
         logger.debug("Received: {}", msg);
+
         JsonObject json = new Gson().fromJson(msg, JsonObject.class);
         if (json != null) {
             JsonElement id = json.get("id");
             JsonElement method = json.get("method");
             if (id != null && id.getAsInt() != ID_ALL_PROP_QUERY && id.getAsInt() != ID_ACTION_QUERY) {
-                // If result is not from internal command update "command result" channel
+                // ignore message that are from user action
             } else if (id != null && json.get("error") != null) {
-                logger.debug("Invalid command");
+                handleError(id.getAsInt(), json.get("error"));
             } else if (id != null) {
                 handleResponse(id.getAsInt(), json.get("result").getAsJsonArray());
             } else if (method != null && method.getAsString().equals("props")) {
@@ -231,11 +236,12 @@ public class Yeelight2Handler extends BaseThingHandler {
         }
     }
 
+    private void handleError(int id, JsonElement jsonElement) {
+        logger.debug("Invalid command. id: {}, cause: {}", id, jsonElement);
+    }
+
     /**
-     * Handle response to command
-     *
-     * @param id
-     * @param result
+     * Handle response to command (Result message)
      */
     private void handleResponse(int id, JsonArray result) {
         if (id == ID_ALL_PROP_QUERY && result.size() == YeelightDeviceProperty.values().length) {
@@ -251,9 +257,7 @@ public class Yeelight2Handler extends BaseThingHandler {
     }
 
     /**
-     * Handle update from device
-     *
-     * @param props
+     * Handle update from device (Notification message)
      */
     private void handleUpdate(JsonObject props) {
         for (String propName : props.keySet()) {
@@ -286,11 +290,40 @@ public class Yeelight2Handler extends BaseThingHandler {
 
     private void updateState(YeelightDeviceProperty property, String value) {
         if (!value.isEmpty()) {
-
             stateByProp.put(property, value);
             ChannelUID defaultChannelUID = new ChannelUID(this.getThing().getUID(), property.getChannelGroupId(),
                     property.getPropertyName());
             updateState(defaultChannelUID, property.getState(value));
+        }
+    }
+
+    @Override
+    public void handleSocketMessage(SelectableChannel channel) {
+        try {
+            int read = ((SocketChannel) channel).read(socketReaderBB.clear());
+            socketReaderBB.flip();
+            if (read > 0) {
+                while (socketReaderBB.hasRemaining()) {
+                    char c = (char) socketReaderBB.get();
+                    if (c == '\r') {
+                        continue; // ignore '\r' from the "\r\n" string
+                    } else if (c == '\n') {
+                        // end of message
+                        // /!\ presume that messages are not cut /!\
+                        onMessage(socketMessageSB.toString());
+                        socketMessageSB.setLength(0); // reset for next msg
+                    } else {
+                        socketMessageSB.append(c);
+                    }
+                }
+            } else if (read == -1) {
+                throw new IOException("End of Socket");
+            } else {
+                logger.error("Socket empty");
+            }
+        } catch (IOException e) {
+            logger.error("Error on socket", e);
+            handleSocketException(e);
         }
     }
 
